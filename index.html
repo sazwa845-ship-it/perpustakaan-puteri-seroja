@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpustakaan Puteri Seroja (Open Source Edition)</title>
+    <!-- Keep the exact stylized CSS design tags from original dashboard components -->
+    <style>
+        @font-face { font-family: 'Aston Script'; src: local('Aston Script'), local('Brush Script MT'), local('Great Vibes'); }
+        @font-face { font-family: 'Qalogre'; src: local('Qalogre'), local('Playfair Display'), local('Georgia'); }
+        @font-face { font-family: 'Newake'; src: local('Newake'), local('Inter'), local('Segoe UI'), sans-serif; }
+        :root {
+            --pastel-beige: #F9F6F0; --pastel-beige-dark: #EFEAE2; --cotton-candy-pink: #FFD1DC;
+            --cotton-candy-pink-hover: #FFAEC1; --grass-green: #B2D8B2; --grass-green-hover: #99C699;
+            --pastel-yellow: #FFF2B2; --pastel-yellow-hover: #FFE680; --pastel-red: #FFB3B3;
+            --pastel-red-hover: #FF9999; --text-dark: #4A443F; --text-muted: #8A8078;
+            --white: #FFFFFF; --shadow: rgba(74, 68, 63, 0.06); --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Newake', 'Inter', sans-serif; color: var(--text-dark); }
+        body { display: flex; background-color: var(--pastel-beige); min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
+        #sidebar { width: 290px; background-color: var(--white); border-right: 1px solid var(--pastel-beige-dark); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 10; }
+        .sidebar-brand { padding: 30px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; border-bottom: 1px solid var(--pastel-beige-dark); }
+        .library-logo { width: 60px; height: 50px; position: relative; margin-bottom: 15px; }
+        .library-logo .book-base { position: absolute; bottom: 5px; width: 50px; height: 12px; border: 3px solid var(--text-dark); border-radius: 3px; left: 5px; }
+        .library-logo .book-pages { position: absolute; bottom: 14px; width: 42px; height: 20px; border: 3px solid var(--text-dark); border-bottom: none; border-radius: 6px 6px 0 0; left: 9px; }
+        .library-logo .heart { position: absolute; top: 2px; left: 23px; width: 12px; height: 12px; background: var(--pastel-red); transform: rotate(-45deg); animation: pulse 2s infinite; }
+        .library-logo .heart:before, .library-logo .heart:after { content: ""; position: absolute; width: 12px; height: 12px; background: var(--pastel-red); border-radius: 50%; }
+        .library-logo .heart:before { top: -6px; left: 0; } .library-logo .heart:after { top: 0; right: -6px; }
+        @keyframes pulse { 0% { transform: scale(1) rotate(-45deg); } 50% { transform: scale(1.15) rotate(-45deg); } 100% { transform: scale(1) rotate(-45deg); } }
+        h1.brand-title { font-family: 'Aston Script', cursive; font-size: 26px; color: var(--text-dark); margin-bottom: 4px; font-weight: normal; }
+        p.brand-subtitle { font-family: 'Qalogre', serif; font-size: 13px; font-style: italic; color: var(--text-muted); }
+        #entity-menu { list-style: none; padding: 24px 16px; overflow-y: auto; flex-grow: 1; }
+        #entity-menu li { padding: 14px 18px; margin-bottom: 8px; border-radius: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: var(--transition); font-weight: 500; font-size: 14px; }
+        #entity-menu li:hover { background-color: var(--pastel-beige); transform: translateX(4px); }
+        #entity-menu li.active { background-color: var(--cotton-candy-pink); font-weight: 600; }
+        #entity-menu li .badge { background-color: var(--white); padding: 3px 9px; border-radius: 20px; font-size: 11px; border: 1px solid var(--pastel-beige-dark); }
+        #main-dashboard { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; }
+        .controls-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .search-filter-box { display: flex; gap: 12px; flex-grow: 1; max-width: 600px; }
+        .search-bar-wrapper { position: relative; flex-grow: 1; }
+        .search-bar-wrapper input { width: 100%; padding: 12px 16px 12px 40px; border-radius: 14px; border: 1px solid var(--pastel-beige-dark); background: var(--white); font-size: 14px; }
+        .search-bar-wrapper::before { content: "🔍"; position: absolute; left: 15px; top: 12px; font-size: 14px; opacity: 0.6; }
+        .filter-select { padding: 12px 16px; border-radius: 14px; border: 1px solid var(--pastel-beige-dark); background: var(--white); font-size: 14px; outline: none; }
+        .btn { padding: 12px 20px; border: none; border-radius: 14px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); box-shadow: 0 4px 6px var(--shadow); }
+        .btn:active { transform: scale(0.95); }
+        .btn-green { background-color: var(--grass-green); } .btn-green:hover { background-color: var(--grass-green-hover); transform: translateY(-2px); }
+        .btn-yellow { background-color: var(--pastel-yellow); } .btn-yellow:hover { background-color: var(--pastel-yellow-hover); }
+        .btn-red { background-color: var(--pastel-red); } .btn-red:hover { background-color: var(--pastel-red-hover); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; box-shadow: none; }
+        #book-showcase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .book-card { background: var(--white); border-radius: 20px; padding: 20px; box-shadow: 0 10px 20px var(--shadow); display: flex; gap: 20px; align-items: center; border: 1px solid rgba(239, 234, 226, 0.5); }
+        .book-cover { width: 90px; height: 130px; border-radius: 8px; box-shadow: 2px 4px 8px rgba(0,0,0,0.15); display: flex; flex-direction: column; justify-content: space-between; padding: 10px; color: white; position: relative; overflow: hidden; flex-shrink: 0; }
+        .book-cover::after { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 5px; background: rgba(0,0,0,0.15); }
+        .book-cover .cover-title { font-size: 10px; font-weight: bold; color: white; line-height: 1.2; word-break: break-word; }
+        .book-cover .cover-genre { font-size: 8px; text-transform: uppercase; color: rgba(255,255,255,0.8); }
+        .cover-theme-1 { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .cover-theme-2 { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); }
+        .cover-theme-3 { background: linear-gradient(135deg, #fcd964 0%, #fad0c4 100%); }
+        .cover-theme-4 { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); }
+        .cover-theme-5 { background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%); }
+        .cover-theme-6 { background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); }
+        .cover-theme-default { background: linear-gradient(135deg, #bdc3c7, #2c3e50); }
+        .book-details { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+        .book-details h3 { font-size: 16px; font-weight: 600; }
+        .book-details .author { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+        .book-details .meta-tag { font-size: 11px; padding: 3px 8px; border-radius: 6px; background: var(--pastel-beige); width: fit-content; }
+        .book-card-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .table-ui-container { background: var(--white); border-radius: 20px; box-shadow: 0 10px 25px var(--shadow); overflow-x: auto; border: 1px solid var(--pastel-beige-dark); margin-bottom: 40px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 800px; }
+        th, td { padding: 16px 20px; font-size: 14px; }
+        th { background-color: var(--pastel-beige-dark); font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        tr { border-bottom: 1px solid var(--pastel-beige-dark); }
+        tr:hover { background-color: rgba(249, 246, 240, 0.6); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(74, 68, 63, 0.2); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: var(--white); border-radius: 24px; padding: 32px; width: 520px; max-width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .close-btn { font-size: 24px; cursor: pointer; opacity: 0.5; }
+        .form-grid { display: flex; flex-direction: column; gap: 16px; max-height: 60vh; overflow-y: auto; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 6px; color: var(--text-muted); }
+        .form-group input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--pastel-beige-dark); outline: none; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div class="sidebar-brand">
+            <div class="library-logo"><div class="book-base"></div><div class="book-pages"></div><div class="heart"></div></div>
+            <h1 class="brand-title">Perpustakaan Puteri Seroja</h1>
+            <p class="brand-subtitle">Lost in a sea of stories</p>
+        </div>
+        <ul id="entity-menu"></ul>
+    </div>
+
+    <div id="main-dashboard">
+        <div class="controls-header">
+            <div class="search-filter-box">
+                <div class="search-bar-wrapper">
+                    <input type="text" id="search-input" placeholder="Search live database records..." oninput="handleSearchFilter()">
+                </div>
+                <select id="filter-column" class="filter-select" onchange="handleSearchFilter()"></select>
+            </div>
+            <button class="btn btn-green" onclick="openCreateModal()"><span>➕</span> Add Record</button>
+        </div>
+        <div id="content-view"></div>
+    </div>
+
+    <div id="form-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Modify Record</h3>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="crud-form" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="edit-index">
+                <div class="form-grid" id="form-fields"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-red btn-sm" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-green btn-sm">Save to phpMyAdmin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Database Schemas containing primary key tags matching your database tables
+        const databaseSchema = {
+            book: { pk: 'Item_ID', columns: ['Item_ID', 'Tittle', 'ISBN', 'Author', 'Publisher', 'Year', 'Status', 'Genre_ID'] },
+            borrow: { pk: 'Borrow_ID', columns: ['Borrow_ID', 'Borrow_Date', 'Due_Date', 'Return_Date', 'Member_ID', 'Staff_ID', 'Item_ID'] },
+            fine: { pk: 'Fine_ID', columns: ['Fine_ID', 'Date_Issued', 'Amount_Charge', 'Overdue_Period', 'Status', 'Reason', 'Borrow_ID'] },
+            genre: { pk: 'Genre_ID', columns: ['Genre_ID', 'Genre_Name', 'Description'] },
+            library_staff: { pk: 'Staff_ID', columns: ['Staff_ID', 'First_Name', 'Last_Name', 'Staff_Contact', 'Staff_Email', 'Position'] },
+            member_user: { pk: 'Member_ID', columns: ['Member_ID', 'First_Name', 'Last_Name', 'User_Contact', 'User_Email', 'User_Address', 'Postcode', 'state'] },
+            supplier: { pk: 'Supplier_ID', columns: ['Supplier_ID', 'Supplier_Name', 'Supplier_Contact', 'Supplier_Email', 'Item_ID', 'Staff_ID'] }
+        }; //[cite: 1, 2]
+
+        let currentEntity = 'book';
+        let serverData = [];
+        let filteredRecords = [];
+
+        async function initApp() {
+            await fetchLiveRecords();
+            renderSidebar();
+            switchEntity(currentEntity);
+        }
+
+        async function fetchLiveRecords() {
+            try {
+                const response = await fetch(`api.php?entity=${currentEntity}`);
+                serverData = await response.json();
+                filteredRecords = [...serverData];
+            } catch (err) {
+                console.error("Open-Source Connection Failed:", err);
+            }
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('entity-menu');
+            list.innerHTML = '';
+            Object.keys(databaseSchema).forEach(key => {
+                const li = document.createElement('li');
+                li.className = key === currentEntity ? 'active' : '';
+                const formatName = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+                li.innerHTML = `<span>${formatName}</span>`;
+                li.onclick = async () => {
+                    currentEntity = key;
+                    await fetchLiveRecords();
+                    switchEntity(key);
+                };
+                list.appendChild(li);
+            });
+        }
+
+        function switchEntity(entityKey) {
+            document.getElementById('search-input').value = '';
+            const filterSelect = document.getElementById('filter-column');
+            filterSelect.innerHTML = `<option value="all">All Fields</option>` + 
+                databaseSchema[entityKey].columns.map(c => `<option value="${c}">${c}</option>`).join('');
+            renderContentView();
+        }
+
+        function renderContentView() {
+            const container = document.getElementById('content-view');
+            container.innerHTML = '';
+
+            if (currentEntity === 'book') {
+                const grid = document.createElement('div');
+                grid.id = 'book-showcase-grid';
+                filteredRecords.forEach((book, idx) => {
+                    const genreClass = (book.Genre_ID >= 1 && book.Genre_ID <= 6) ? `cover-theme-${book.Genre_ID}` : 'cover-theme-default';
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div class="book-cover ${genreClass}">
+                            <div class="cover-title">${book.Tittle}</div>
+                            <div class="cover-genre">G-${book.Genre_ID}</div>
+                        </div>
+                        <div class="book-details">
+                            <h3>${book.Tittle}</h3>
+                            <div class="author">by ${book.Author}</div>
+                            <div class="meta-tag">ID: ${book.Item_ID}</div>
+                            <div class="meta-tag">Status: ${book.Status}</div>
+                            <div class="book-card-actions">
+                                <button class="btn btn-yellow btn-sm" onclick="openEditModal(${idx})">✏️ Edit</button>
+                                <button class="btn btn-red btn-sm" onclick="deleteRecord(${idx})">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    `; //[cite: 1]
+                    grid.appendChild(card);
+                });
+                container.appendChild(grid);
+            } else {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-ui-container';
+                const table = document.createElement('table');
+                const columns = databaseSchema[currentEntity].columns;
+                
+                table.innerHTML = `<thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}<th>Actions</th></tr></thead><tbody id="table-body-rows"></tbody>`;
+                wrapper.appendChild(table);
+                container.appendChild(wrapper);
+
+                const tbody = table.querySelector('#table-body-rows');
+                filteredRecords.forEach((row, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = columns.map(c => `<td>${row[c] !== null ? row[c] : '-'}</td>`).join('') + `
+                        <td>
+                            <button class="btn btn-yellow btn-sm" onclick="openEditModal(${idx})">✏️ Edit</button>
+                            <button class="btn btn-red btn-sm" onclick="deleteRecord(${idx})">🗑️ Delete</button>
+                        </td>`;
+                    tbody.appendChild(tr);
+                }); //[cite: 1]
+            }
+        }
+
+        function handleSearchFilter() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const colFilter = document.getElementById('filter-column').value;
+            filteredRecords = serverData.filter(row => {
+                if (colFilter === 'all') {
+                    return Object.values(row).some(val => String(val).toLowerCase().includes(query));
+                } else {
+                    return String(row[colFilter]).toLowerCase().includes(query);
+                }
+            });
+            renderContentView();
+        }
+
+        function openCreateModal() {
+            document.getElementById('modal-title').innerText = `Add New Record`;
+            document.getElementById('edit-index').value = "-1";
+            buildFormFields({});
+            document.getElementById('form-modal').style.display = 'flex';
+        }
+
+        function openEditModal(index) {
+            document.getElementById('modal-title').innerText = `Edit Existing Record`;
+            document.getElementById('edit-index').value = index;
+            buildFormFields(filteredRecords[index]);
+            document.getElementById('form-modal').style.display = 'flex';
+        }
+
+        function buildFormFields(data) {
+            const box = document.getElementById('form-fields');
+            box.innerHTML = '';
+            const schema = databaseSchema[currentEntity];
+            schema.columns.forEach(col => {
+                const isPk = (col === schema.pk);
+                const value = data[col] !== undefined ? data[col] : '';
+                box.innerHTML += `
+                    <div class="form-group">
+                        <label>${col.replace('_', ' ')} ${isPk ? '(Primary Key Auto-Increment)' : ''}</label>
+                        <input type="text" name="${col}" value="${value}" ${isPk && data[col] !== undefined ? 'readonly' : ''}>
+                    </div>`; //[cite: 1]
+            });
+        }
+
+        function closeModal() { document.getElementById('form-modal').style.display = 'none'; }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const form = new FormData(e.target);
+            const schema = databaseSchema[currentEntity];
+            const editIdx = parseInt(document.getElementById('edit-index').value);
+            const entry = {};
+
+            schema.columns.forEach(col => {
+                let val = form.get(col);
+                entry[col] = val === '' ? null : val;
+            });
+
+            if (editIdx !== -1) {
+                entry['__is_update'] = true;
+            }
+
+            const response = await fetch(`api.php?entity=${currentEntity}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry)
+            });
+            const res = await response.json();
+            if (res.success) {
+                closeModal();
+                await fetchLiveRecords();
+                renderContentView();
+            } else {
+                alert("Database Error Encountered: " + res.error);
+            }
+        }
+
+        async function deleteRecord(index) {
+            if (confirm("Are you sure you want to drop this record from the system database?")) {
+                const schema = databaseSchema[currentEntity];
+                const entry = {};
+                entry[schema.pk] = filteredRecords[index][schema.pk];
+
+                const response = await fetch(`api.php?entity=${currentEntity}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entry)
+                });
+                const res = await response.json();
+                if (res.success) {
+                    await fetchLiveRecords();
+                    renderContentView();
+                } else {
+                    alert("Delete constraints conflict inside phpMyAdmin database.");
+                }
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
