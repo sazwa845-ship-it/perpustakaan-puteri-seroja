@@ -1,5 +1,12 @@
-# Perpustakaan Puteri Seroja - Live Admin Dashboard
+## 🚀 Open-Source Quick Start
 
+You can view the live frontend design preview here: [Live Demo Link](https://your-username.github.io/perpustakaan-puteri-seroja/)
+
+To run this project locally with full phpMyAdmin database integration:
+1. Open your terminal inside your XAMPP `htdocs` folder.
+2. Clone the repository:
+   ```bash
+   git clone [https://github.com/your-username/perpustakaan-puteri-seroja.git](https://github.com/your-username/perpustakaan-puteri-seroja.git)
 An open-source administration workspace system connecting an adaptive frontend web layout UI seamlessly to MySQL backends managed under phpMyAdmin.
 
 ## Local Installation Setup
