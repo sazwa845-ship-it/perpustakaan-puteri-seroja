@@ -11,3 +11,4 @@ An open-source administration workspace system connecting an adaptive frontend w
 5. Create a new clean schema workspace database structure named `perpustakaanpuetriseroja`.
 6. Use the **Import** mechanism option on top of the tab toolbar list inside phpMyAdmin to select and upload your original text dump schema `perpustakaanpuetriseroja 2.sql`.
 7. Once successfully uploaded, access your web dashboard system deployment interface locally inside your web browser via: `http://localhost/perpustakaan/index.html`.
+git clone https://github.com/your-username/perpustakaan-puteri-seroja.git
